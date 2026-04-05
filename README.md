@@ -1,76 +1,53 @@
-<div align="center">
-  <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js" />
-  <img src="https://img.shields.io/badge/Three.js-000000?style=for-the-badge&logo=threedotjs&logoColor=white" alt="Three.js" />
-  <img src="https://img.shields.io/badge/Groq-Cloud-blue?style=for-the-badge" alt="Groq" />
-  <img src="https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white" alt="Framer Motion" />
-</div>
+# CAD Copilot AI - Real-Time Design Intelligence
 
-<h1 align="center">🛠️ AI CAD Validator</h1>
+**Transforming CAD validation from a reactive bottleneck into a proactive AI assistant.**
 
-<p align="center">
-  <strong>An Intelligent, Real-Time 3D CAD Validation platform leveraging AI to automatically inspect models.</strong>
-</p>
+CAD Copilot AI is a web-based, AI-driven CAD validation platform originally built as a prototype for the Varroc Eureka 3.0 Hackathon. It integrates rule-based physical checking (clearances, constraints) with pure AI-powered report generation to catch manufacturing flaws instantly.
 
-## 🚀 Overview
-**AI CAD Validator** is a high-performance web application designed to automatically inspect, visualize, and validate 3D CAD models. Powered by state-of-the-art WebGL rendering (Three.js) and lightning-fast AI inferencing (Groq Cloud), it provides instant structural insights, detects design anomalies, and generates professional PDF reports for engineers.
+## 🚀 Features
 
----
+* **Real-Time 3D Model Viewer:** Powered by `@react-three/fiber` and `three-stdlib`. Spin, pan, and visually inspect 3D models right in your browser.
+* **Real File Uploads (New in Phase 1!):** Upload actual `.stl` or `.glb` files and see them rendered instantly in metallic shaders dynamically tracking bounds. 
+* **Hybrid Validation Engine:** 
+  * **Rule-Based:** Hard deterministic checks natively handle naming conventions, constraints (Degrees of Freedom), and minimum geometric clearance gaps.
+  * **AI Analysis:** Uses ultra-fast `Groq-sdk` LLM routing to break down rule failures and output actionable, human-readable engineering suggestions.
+* **Automated PDF Reporting:** One-click generation of professional engineering reports including component metrics and AI evaluation via `jsPDF`.
+* **Sleek Premium Dashboard:** Built natively on Next.js leveraging custom CSS variables, glassmorphism, and a high-end dark design system.
 
-## ✨ Key Features
-- **🌐 Interactive 3D Viewer:** Seamless 3D model visualization directly in the browser using `@react-three/fiber`.
-- **🧠 AI-Powered Inspection:** Deep insights and design validation with real-time feedback powered by Groq's high-speed LLM APIs.
-- **📄 Instant Reports:** 1-click generation of professional engineering reports in PDF (`jsPDF`) and Presentations (`pptxgenjs`).
-- **✨ Fluid UI/UX:** Premium, animated interface powered by `framer-motion`.
-- **⚡ Next.js 15+:** Blazing fast rendering and routing.
+## 🛠️ Tech Stack
+* **Frontend Framework:** Next.js (App Router)
+* **3D Rendering:** Three.js, React Three Fiber, React Three Drei
+* **Intelligence / AI:** Groq API (Llama-3 model)
+* **Styling:** Custom Vanilla CSS (Dark Engineering UI)
+* **Exports:** jsPDF
 
----
+## 💻 Running the Project Locally
 
-## 💻 Tech Stack
-* **Frontend Framework:** Next.js (App Router), React 19
-* **Styling & Animations:** Tailwind CSS v4, Framer Motion
-* **3D Rendering:** Three.js, React Three Fiber, Drei
-* **AI Engine:** Groq SDK
-* **Export Utilities:** jsPDF, pptxgenjs, react-markdown
-
----
-
-## 🛠️ Getting Started
-
-### 1. Clone the repository
-```bash
-git clone https://github.com/your-username/ai-cad-validator.git
-cd ai-cad-validator
-```
-
-### 2. Install dependencies
+### 1. Install Dependencies
+Make sure you have Node installed. Clone the repository and run:
 ```bash
 npm install
-# or
-yarn install
 ```
 
-### 3. Setup Environment Variables
-Create a `.env.local` file in the root directory and add your Groq API Key:
-```env
-GROQ_API_KEY=your_groq_api_key_here
+### 2. Configure the Environment
+To use the AI-powered reporting tools, you need a Groq API Key. 
+Create a file named `.env.local` in the root of the project:
+```bash
+GROQ_API_KEY=your_actual_groq_api_key_here
 ```
 
-### 4. Run the development server
+### 3. Start the Development Server
 ```bash
 npm run dev
-# or
-yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the 3D dashboard in action!
+Navigate to `http://localhost:3000` in your web browser. 
 
 ---
 
-## 🤝 Contributing
-Contributions are always welcome. Whether fixing a bug, suggesting a feature, or writing documentation — feel free to open an issue or submit a Pull Request.
+## 🗺️ Future Roadmap
 
----
-
-<div align="center">
-  <sub>Built for precision and speed.</sub>
-</div>
+* **Phase 1 (In Progress):** Upgrading from dummy bounding boxes to extracting actual coordinate bounds directly from uploaded mesh geometries.
+* **Phase 2:** Native CAD plugin extensions (Fusion 360 / SolidWorks / AutoCAD).
+* **Phase 3:** Custom validation-rule editor for enterprise-specific manufacturing thresholds.
+* **Phase 4:** Cloud database structures for team collaboration and longitudinal history analytics.

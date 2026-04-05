@@ -5,19 +5,34 @@ import Sidebar from '../components/Sidebar';
 import ModelViewer from '../components/ModelViewer';
 import { runFullValidation } from '../lib/validationEngine';
 import { sampleWithIssues, sampleClean } from '../lib/sampleData';
-import { MdPlayArrow, MdCheckCircle, MdError, MdWarning, MdInfo } from 'react-icons/md';
+import { MdPlayArrow, MdCheckCircle, MdError, MdWarning, MdInfo, MdFileUpload } from 'react-icons/md';
 
 export default function ValidatePage() {
     const [results, setResults] = useState(null);
     const [isRunning, setIsRunning] = useState(false);
     const [selectedSample, setSelectedSample] = useState('issues');
+    const [uploadedFile, setUploadedFile] = useState(null);
+    const [fileUrl, setFileUrl] = useState(null);
+
+    // Handle file selection
+    const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setUploadedFile(file);
+
+            const objectUrl = URL.createObjectURL(file);
+            setFileUrl(objectUrl);
+
+            setResults(null);
+        }
+    };
+
 
     // Run the validation
     const handleValidate = () => {
         setIsRunning(true);
         setResults(null);
 
-        // Simulate AI processing delay (feels more realistic)
         setTimeout(() => {
             const data = selectedSample === 'issues' ? sampleWithIssues : sampleClean;
             const validationResults = runFullValidation(data);
@@ -40,30 +55,40 @@ export default function ValidatePage() {
 
                     {/* 3D Viewer */}
                     <div className="glass-card" style={{ height: '400px', padding: '0', overflow: 'hidden' }}>
-                        <ModelViewer />
+                        <ModelViewer fileUrl={fileUrl} />
                     </div>
+
 
                     {/* Controls Panel */}
                     <div className="glass-card">
                         <h3 style={{ marginBottom: '20px', fontSize: '16px', fontWeight: '600' }}>Validation Controls</h3>
 
-                        {/* Sample Selector */}
+                        {/* File Uploader */}
                         <label style={{ fontSize: '13px', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
-                            SELECT SAMPLE DATA
+                            UPLOAD CAD FILE (.STL or .GLB)
                         </label>
-                        <select
-                            value={selectedSample}
-                            onChange={(e) => { setSelectedSample(e.target.value); setResults(null); }}
-                            style={{
-                                width: '100%', padding: '10px 12px', borderRadius: '8px',
-                                background: 'var(--bg-card)', color: 'var(--text-primary)',
-                                border: '1px solid var(--border-color)', fontSize: '14px',
-                                marginBottom: '20px', cursor: 'pointer', outline: 'none',
-                            }}
-                        >
-                            <option value="issues">🔴 Sample Design — Has Errors</option>
-                            <option value="clean">🟢 Sample Design — All Good</option>
-                        </select>
+
+                        <div style={{ marginBottom: '20px' }}>
+                            {/* Hidden file input */}
+                            <input
+                                type="file"
+                                id="cad-upload"
+                                accept=".stl,.glb,.gltf"
+                                onChange={handleFileUpload}
+                                style={{ display: 'none' }}
+                            />
+
+                            {/* Custom button to trigger the hidden input */}
+                            <label
+                                htmlFor="cad-upload"
+                                className="btn btn-outline"
+                                style={{ width: '100%', justifyContent: 'center', cursor: 'pointer', borderStyle: 'dashed' }}
+                            >
+                                <MdFileUpload style={{ fontSize: '20px' }} />
+                                {uploadedFile ? uploadedFile.name : 'Choose File to Upload...'}
+                            </label>
+                        </div>
+
 
                         {/* Checks Info */}
                         <div style={{ marginBottom: '20px' }}>

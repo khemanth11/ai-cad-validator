@@ -1,74 +1,88 @@
 'use client';
-
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment, ContactShadows } from '@react-three/drei';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { STLLoader } from 'three-stdlib';
 
 // A mechanical bracket-like CAD part (made from basic shapes)
-function CADModel({ showIssues }) {
+function CADModel({ showIssues, fileUrl }) {
+    const [uploadedGeometry, setUploadedGeometry] = useState(null);
+
+    // This safely loads the STL only when a fileUrl is provided
+    useEffect(() => {
+        if (!fileUrl) {
+            setUploadedGeometry(null);
+            return;
+        }
+
+        const loader = new STLLoader();
+        loader.load(fileUrl, (geometry) => {
+            // CRITICAL FIX: Internet STLs are often way off-center. This moves it to the middle!
+            geometry.center();
+
+            // Recompute normals for smooth shading
+            geometry.computeVertexNormals();
+
+            setUploadedGeometry(geometry);
+        }, undefined, (err) => console.error("Error loading STL:", err));
+    }, [fileUrl]);
+
+    // IF A REAL FILE WAS UPLOADED: Show the uploaded 3D mesh
+    if (uploadedGeometry) {
+        return (
+            <mesh geometry={uploadedGeometry} scale={1}>
+                {/* A cool metallic blue material for uploaded CAD parts */}
+                <meshStandardMaterial color="#4f8bff" metalness={0.6} roughness={0.4} />
+            </mesh>
+        );
+    }
+
+    // OTHERWISE: Show our default fake demo bracket
     return (
-        <group>
-            {/* Main body - base plate */}
-            <mesh position={[0, 0, 0]}>
-                <boxGeometry args={[3, 0.3, 2]} />
-                <meshStandardMaterial color="#64748b" metalness={0.8} roughness={0.2} />
+        <group position={[-25, -15, -10]}>
+            {/* Base plate */}
+            <mesh position={[25, 5, 10]} castShadow receiveShadow>
+                <boxGeometry args={[50, 10, 20]} />
+                <meshStandardMaterial color="#3b82f6" metalness={0.5} roughness={0.5} />
             </mesh>
 
-            {/* Left wall */}
-            <mesh position={[-1.2, 0.8, 0]}>
-                <boxGeometry args={[0.3, 1.3, 1.8]} />
-                <meshStandardMaterial color="#64748b" metalness={0.8} roughness={0.2} />
+            {/* Left Wall */}
+            <mesh position={[5, 20, 10]} castShadow receiveShadow>
+                <boxGeometry args={[10, 20, 20]} />
+                <meshStandardMaterial color="#3b82f6" metalness={0.5} roughness={0.5} />
             </mesh>
 
-            {/* Right wall */}
-            <mesh position={[1.2, 0.8, 0]}>
-                <boxGeometry args={[0.3, 1.3, 1.8]} />
-                <meshStandardMaterial color="#64748b" metalness={0.8} roughness={0.2} />
+            {/* Right Wall */}
+            <mesh position={[45, 20, 10]} castShadow receiveShadow>
+                <boxGeometry args={[10, 20, 20]} />
+                <meshStandardMaterial color="#3b82f6" metalness={0.5} roughness={0.5} />
             </mesh>
 
-            {/* Top connector beam */}
-            <mesh position={[0, 1.45, 0]}>
-                <boxGeometry args={[2.7, 0.25, 0.8]} />
-                <meshStandardMaterial color="#475569" metalness={0.8} roughness={0.2} />
+            {/* Top Connector */}
+            <mesh position={[25, 30, 10]} castShadow receiveShadow>
+                <boxGeometry args={[50, 10, 10]} />
+                <meshStandardMaterial color="#3b82f6" metalness={0.5} roughness={0.5} />
             </mesh>
 
-            {/* Bolt hole 1 */}
-            <mesh position={[-0.8, -0.15, 0.6]}>
-                <cylinderGeometry args={[0.12, 0.12, 0.35, 16]} />
-                <meshStandardMaterial color="#334155" metalness={0.9} roughness={0.1} />
-            </mesh>
-
-            {/* Bolt hole 2 */}
-            <mesh position={[0.8, -0.15, 0.6]}>
-                <cylinderGeometry args={[0.12, 0.12, 0.35, 16]} />
-                <meshStandardMaterial color="#334155" metalness={0.9} roughness={0.1} />
-            </mesh>
-
-            {/* Bolt hole 3 */}
-            <mesh position={[-0.8, -0.15, -0.6]}>
-                <cylinderGeometry args={[0.12, 0.12, 0.35, 16]} />
-                <meshStandardMaterial color="#334155" metalness={0.9} roughness={0.1} />
-            </mesh>
-
-            {/* Bolt hole 4 */}
-            <mesh position={[0.8, -0.15, -0.6]}>
-                <cylinderGeometry args={[0.12, 0.12, 0.35, 16]} />
-                <meshStandardMaterial color="#334155" metalness={0.9} roughness={0.1} />
-            </mesh>
-
-            {/* Issue highlight zones (shown when validation runs) */}
+            {/* ERROR HIGHLIGHTS (Only appear if showIssues is TRUE) */}
             {showIssues && (
                 <>
-                    {/* Red zone - clearance issue between walls */}
-                    <mesh position={[0, 0.8, 0.9]}>
-                        <boxGeometry args={[2.7, 1.3, 0.05]} />
-                        <meshStandardMaterial color="#ef4444" transparent opacity={0.4} />
+                    {/* Clearance Clash (Red box) */}
+                    <mesh position={[25, 25, 10]}>
+                        <boxGeometry args={[30, 12, 12]} />
+                        <meshBasicMaterial color="#ef4444" opacity={0.6} transparent depthWrite={false} />
                     </mesh>
 
-                    {/* Yellow zone - naming issue indicator */}
-                    <mesh position={[0, 1.8, 0]}>
-                        <sphereGeometry args={[0.15, 16, 16]} />
-                        <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={0.5} />
+                    {/* Constraint Issue Marker (Yellow glowing sphere) */}
+                    <mesh position={[45, 35, 10]}>
+                        <sphereGeometry args={[4, 16, 16]} />
+                        <meshBasicMaterial color="#f59e0b" opacity={0.8} transparent />
+                    </mesh>
+
+                    {/* Naming Issue Marker */}
+                    <mesh position={[5, 35, 10]}>
+                        <sphereGeometry args={[4, 16, 16]} />
+                        <meshBasicMaterial color="#f59e0b" opacity={0.8} transparent />
                     </mesh>
                 </>
             )}
@@ -76,64 +90,39 @@ function CADModel({ showIssues }) {
     );
 }
 
-export default function ModelViewer() {
+export default function ModelViewer({ fileUrl }) {
     const [showIssues, setShowIssues] = useState(false);
 
     return (
-        <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-            {/* Controls overlay */}
-            <div style={{
-                position: 'absolute', top: '16px', left: '16px', zIndex: 10,
-                display: 'flex', gap: '8px'
-            }}>
-                <button
-                    className={`btn ${showIssues ? 'btn-primary' : 'btn-outline'}`}
-                    onClick={() => setShowIssues(!showIssues)}
-                    style={{ fontSize: '12px', padding: '8px 14px' }}
-                >
-                    {showIssues ? '🔴 Hide Issues' : '🔍 Show Issues'}
-                </button>
-            </div>
-
-            {/* 3D Canvas */}
-            <Canvas
-                camera={{ position: [4, 3, 4], fov: 45 }}
-                style={{ background: '#0a0e17' }}
-            >
-                <ambientLight intensity={0.4} />
-                <directionalLight position={[5, 5, 5]} intensity={1} />
-                <directionalLight position={[-5, 3, -5]} intensity={0.3} />
-
-                <CADModel showIssues={showIssues} />
-
-                <ContactShadows
-                    position={[0, -0.15, 0]}
-                    opacity={0.4}
-                    scale={10}
-                    blur={2}
-                />
-
-                <OrbitControls
-                    enablePan={true}
-                    enableZoom={true}
-                    enableRotate={true}
-                />
-
+        <div style={{ position: 'relative', width: '100%', height: '100%', background: '#0f172a' }}>
+            {/* 3D Canvas Context */}
+            <Canvas shadows camera={{ position: [0, 50, 100], fov: 50 }}>
+                <ambientLight intensity={0.5} />
+                <directionalLight position={[10, 10, 5]} intensity={1.5} castShadow />
                 <Environment preset="city" />
+
+                {/* Passing BOTH showIssues and fileUrl down to the CADModel */}
+                <CADModel showIssues={showIssues} fileUrl={fileUrl} />
+
+                <ContactShadows position={[0, -20, 0]} opacity={0.4} scale={100} blur={2} />
+                <OrbitControls makeDefault />
             </Canvas>
 
-            {/* Legend */}
-            {showIssues && (
-                <div style={{
-                    position: 'absolute', bottom: '16px', left: '16px', zIndex: 10,
-                    display: 'flex', gap: '16px', background: 'rgba(0,0,0,0.7)',
-                    padding: '10px 16px', borderRadius: '8px', fontSize: '12px'
-                }}>
-                    <span>🔴 Clearance Issue</span>
-                    <span>🟡 Naming Violation</span>
-                    <span>🟢 Constraint OK</span>
-                </div>
-            )}
+            {/* Toggle errors button */}
+            <button
+                className="btn btn-outline"
+                onClick={() => setShowIssues(!showIssues)}
+                style={{
+                    position: 'absolute',
+                    bottom: '20px',
+                    right: '20px',
+                    background: 'rgba(15, 23, 42, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    zIndex: 10,
+                }}
+            >
+                {showIssues ? 'Hide Issues' : 'Show Issues'}
+            </button>
         </div>
     );
 }
